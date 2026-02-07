@@ -1,0 +1,18 @@
+# Môi trường ảo
+venv/
+.venv/
+env/
+
+# File cấu hình bảo mật - TUYỆT ĐỐI KHÔNG PUSH
+.env
+
+# Dữ liệu cache và DB tạm
+__pycache__/
+*.pyc
+.pytest_cache/
+sql_app.db
+test.db
+.coverage
+
+# Thư mục Docker data (nếu có)
+postgres_data/

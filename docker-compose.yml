@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # Service 1: Cơ sở dữ liệu PostgreSQL
+  db:
+    image: postgres:15
+    container_name: todo_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: todo_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Service 2: Ứng dụng FastAPI
+  web:
+    build: .
+    container_name: todo_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+    # --- CẬP NHẬT TẠI ĐÂY ---
+    environment:
+      - PYTHONPATH=.
+    # -----------------------
+    env_file:
+      - .env
+
+volumes:
+  postgres_data:
