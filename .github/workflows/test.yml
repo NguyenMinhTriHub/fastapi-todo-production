@@ -1,0 +1,24 @@
+name: Python Testing CI
+
+on: [push] # Chạy mỗi khi có code mới được đẩy lên
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+      - name: Run tests
+        env:
+          PYTHONPATH: . # Fix lỗi ModuleNotFoundError
+          SECRET_KEY: "test_secret_key"
+          ALGORITHM: "HS256"
+          DATABASE_URL: "sqlite:///./test.db" # Dùng SQLite để test nhanh
+        run: |
+          pytest
