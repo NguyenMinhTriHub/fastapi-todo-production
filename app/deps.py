@@ -1,10 +1,9 @@
 from fastapi import Depends, HTTPException, status
 from typing import List
-from app.model import User, UserRole
-from app.database import SessionLocal
-from app.core.security import get_current_user # Giả định hàm này lấy user từ JWT
+from app.model import User, UserRole # Import từ file model.py
+from app.core.database import SessionLocal # Trỏ vào thư mục core
+from app.core.security import get_current_user 
 
-# Dependency lấy Database session
 def get_db():
     db = SessionLocal()
     try:
@@ -12,7 +11,6 @@ def get_db():
     finally:
         db.close()
 
-# Class kiểm tra quyền hạn (Role Checker)
 class RoleChecker:
     def __init__(self, allowed_roles: List[UserRole]):
         self.allowed_roles = allowed_roles
@@ -25,5 +23,4 @@ class RoleChecker:
             )
         return user
 
-# Các bộ lọc quyền sẵn có
 allow_admin_only = RoleChecker([UserRole.ADMIN])

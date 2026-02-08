@@ -3,7 +3,7 @@ def test_read_main(client):
     response = client.get("/")
     assert response.status_code == 200
     # Nếu bạn đã sửa app/main.py có trả về message
-    assert response.json() == {"message": "Bản Level 7 đã sẵn sàng để xanh hóa!"}
+    assert response.json() == {"message": "Application is Live"}
 
 def test_get_todos_empty(client):
     """Kiểm tra danh sách Todo ban đầu phải trống"""

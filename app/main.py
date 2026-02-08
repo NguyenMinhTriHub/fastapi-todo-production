@@ -1,18 +1,14 @@
-from fastapi import FastAPI, Response
-from app.routers import todo_router  # Giả sử bạn đang dùng router này
+from fastapi import FastAPI
+from app import model
+from app.core.database import engine
+from app.routers import todo_router, auth_router
 
-app = FastAPI(title="FastAPI Todo Production")
+model.Base.metadata.create_all(bind=engine)
+app = FastAPI(title="To-do App Level 8")
 
-# Endpoint xử lý favicon để tránh lỗi 404 trong logs
-@app.get("/favicon.ico", include_in_schema=False)
-async def favicon():
-    # Trả về mã 204 (No Content) để trình duyệt không báo lỗi
-    return Response(status_code=204)
+app.include_router(auth_router.router) 
+app.include_router(todo_router.router)
 
-# Route gốc kiểm tra trạng thái ứng dụng
 @app.get("/")
-async def root():
-    return {"message": "Welcome to FastAPI Todo API - Production is Live!"}
-
-# Đăng ký các router của bạn
-app.include_router(todo_router.router, prefix="/api/v1")
+def read_root():
+    return {"message": "Application is Live"}
