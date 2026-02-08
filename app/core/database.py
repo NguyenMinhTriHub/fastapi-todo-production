@@ -1,16 +1,22 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
 import os
-from app.core.config import settings
+from sqlalchemy import create_engine
+from sqlalchemy.orm import declarative_base
+from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
 
-# 1. Lấy URL kết nối từ settings (đã được nạp từ file .env)
-# Nếu không tìm thấy, mặc định quay về SQLite để tránh lỗi crash
-SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./sql_app.db")
+# 1. Nạp các biến từ file .env vào hệ thống
+load_dotenv()
 
-# 2. Cấu hình Engine
-# Lưu ý: 'check_same_thread' chỉ cần thiết cho SQLite. 
-# Khi dùng PostgreSQL, ta cần loại bỏ tham số này.
+# 2. Lấy URL kết nối database
+SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL")
+
+# 3. Cơ chế bảo vệ: Nếu biến môi trường bị trống (None), 
+# tự động chuyển sang SQLite để bài test không bị sập
+if SQLALCHEMY_DATABASE_URL is None:
+    SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+
+# 4. Khởi tạo engine
+# Thêm cấu hình check_same_thread nếu sử dụng SQLite
 if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
     engine = create_engine(
         SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
@@ -18,13 +24,11 @@ if SQLALCHEMY_DATABASE_URL.startswith("sqlite"):
 else:
     engine = create_engine(SQLALCHEMY_DATABASE_URL)
 
-# 3. Tạo SessionLocal để quản lý các phiên làm việc với DB
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# 4. Định nghĩa Base class để các Models kế thừa
 Base = declarative_base()
 
-# 5. Dependency: Hàm cung cấp session cho các Router
+# Dependency cung cấp session database cho các API
 def get_db():
     db = SessionLocal()
     try:
