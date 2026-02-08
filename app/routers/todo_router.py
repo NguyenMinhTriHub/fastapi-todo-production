@@ -1,44 +1,39 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status, HTTPException
 from sqlalchemy.orm import Session
-from app.core.database import get_db
-from app.schemas.todo import TodoCreate, TodoUpdate, TodoResponse, TodoPaginationResponse
-from app.services.todo_service import TodoService
-from app.models.user_model import UserModel
+from typing import List
+from app import schemas, model, deps # Sử dụng deps.py tập trung
+from app.services import todo_service as service
 
-# IMPORT TỪ FILE DEPS BẠN VỪA TẠO
-from app.routers.deps import get_current_user
+router = APIRouter(prefix="/todos", tags=["todos"])
 
-router = APIRouter(prefix="/api/v1/todos", tags=["todos"])
-service = TodoService()
-
-@router.get("/", response_model=TodoPaginationResponse)
+@router.get("/", response_model=List[schemas.TodoResponse])
 def read_todos(
+    db: Session = Depends(deps.get_db),
+    current_user: model.User = Depends(deps.get_current_user),
     limit: int = 10,
-    offset: int = 0,
-    db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user) # Bắt buộc có Token
+    offset: int = 0
 ):
-    # Lọc dữ liệu theo owner_id để đảm bảo tính riêng tư
+    # ADMIN: Lấy tất cả To-do của hệ thống
+    if current_user.role == model.UserRole.ADMIN:
+        return service.list_all_todos(db, limit, offset)
+    
+    # USER: Chỉ lấy To-do của chính mình
     return service.list_todos(db, limit, offset, owner_id=current_user.id)
 
-@router.post("/", response_model=TodoResponse, status_code=status.HTTP_201_CREATED)
-def create_todo(
-    todo_in: TodoCreate,
-    db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user)
-):
-    # Gán chủ sở hữu khi tạo mới
-    return service.create_todo(db, todo_in, owner_id=current_user.id)
-
-@router.patch("/{todo_id}", response_model=TodoResponse)
+@router.patch("/{todo_id}", response_model=schemas.TodoResponse)
 def update_todo(
     todo_id: int,
-    todo_in: TodoUpdate,
-    db: Session = Depends(get_db),
-    current_user: UserModel = Depends(get_current_user)
+    todo_in: schemas.TodoUpdate,
+    db: Session = Depends(deps.get_db),
+    current_user: model.User = Depends(deps.get_current_user)
 ):
-    # Chỉ cho phép sửa nếu To-do đó thuộc sở hữu của current_user
-    updated_item = service.partial_update(db, todo_id, todo_in, owner_id=current_user.id)
+    # Cho phép Admin sửa bất kỳ To-do nào, hoặc User sửa đồ của chính mình
+    updated_item = service.partial_update(
+        db, 
+        todo_id=todo_id, 
+        todo_in=todo_in, 
+        current_user=current_user
+    )
     if not updated_item:
         raise HTTPException(
             status_code=404, 
