@@ -1,18 +1,18 @@
-from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
-from app.core.database import engine, get_db, Base
-from app.models import todo_model
+from fastapi import FastAPI, Response
+from app.routers import todo_router  # Giả sử bạn đang dùng router này
 
-# Tạo bảng tự động khi khởi động (Cần thiết cho bài test)
-todo_model.Base.metadata.create_all(bind=engine)
+app = FastAPI(title="FastAPI Todo Production")
 
-app = FastAPI()
+# Endpoint xử lý favicon để tránh lỗi 404 trong logs
+@app.get("/favicon.ico", include_in_schema=False)
+async def favicon():
+    # Trả về mã 204 (No Content) để trình duyệt không báo lỗi
+    return Response(status_code=204)
 
+# Route gốc kiểm tra trạng thái ứng dụng
 @app.get("/")
-def root():
-    return {"message": "Bản Level 7 đã sẵn sàng để xanh hóa!"}
+async def root():
+    return {"message": "Welcome to FastAPI Todo API - Production is Live!"}
 
-# Thêm ít nhất một endpoint mẫu có dùng DB để pass qua bài test
-@app.get("/todos")
-def read_todos(db: Session = Depends(get_db)):
-    return db.query(todo_model.Todo).all()
+# Đăng ký các router của bạn
+app.include_router(todo_router.router, prefix="/api/v1")
