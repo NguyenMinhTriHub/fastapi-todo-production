@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from app.main import app
 from app.deps import get_db
-from app.model import Base, User
+from app.model import Base, User, UserRole
 from app.core.security import create_access_token, get_password_hash
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
@@ -13,15 +13,14 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="module")
 def client():
-    # Tạo bảng và tạo user mẫu để test
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     if not db.query(User).filter(User.email == "mtri20051002@gmail.com").first():
-        # Phải khớp hashed_password với model.py
         test_user = User(
             email="mtri20051002@gmail.com", 
             hashed_password=get_password_hash("testpass"), 
-            is_active=True
+            is_active=True,
+            role=UserRole.ADMIN # Sử dụng UserRole mới cập nhật
         )
         db.add(test_user)
         db.commit()
