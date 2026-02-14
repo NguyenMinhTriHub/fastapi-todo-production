@@ -20,7 +20,7 @@ def client():
             email="mtri20051002@gmail.com", 
             hashed_password=get_password_hash("testpass"), 
             is_active=True,
-            role=UserRole.ADMIN # Sử dụng UserRole mới cập nhật
+            role=UserRole.ADMIN
         )
         db.add(test_user)
         db.commit()

@@ -1,11 +1,10 @@
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Enum as SqlEnum
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.ext.declarative import declarative_base
 import enum
 
 Base = declarative_base()
 
-# Định nghĩa UserRole để sửa lỗi Import
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
     USER = "user"
@@ -16,7 +15,6 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False) 
     is_active = Column(Boolean, default=True)
-    # Sử dụng UserRole vừa định nghĩa
     role = Column(String, default=UserRole.USER) 
     todos = relationship("Todo", back_populates="owner")
 
