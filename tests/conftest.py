@@ -9,7 +9,8 @@ from sqlalchemy.orm import sessionmaker
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app.main import app
-from app.deps import get_db, get_current_user
+from app.deps import get_db
+from app.core.security import get_current_user
 from app.model import Base, User, UserRole # Đảm bảo có UserRole ở đây
 
 # Setup Database ảo cho môi trường test
