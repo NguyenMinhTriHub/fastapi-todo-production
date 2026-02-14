@@ -5,7 +5,6 @@ import enum
 
 Base = declarative_base()
 
-# THÊM LỚP NÀY ĐỂ HẾT LỖI IMPORT TRÊN GITHUB
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
     USER = "user"
@@ -14,7 +13,7 @@ class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    # Tên cột phải là hashed_password để khớp với logic bảo mật
+    # Dùng hashed_password thay vì password để bảo mật
     hashed_password = Column(String, nullable=False) 
     is_active = Column(Boolean, default=True)
     role = Column(String, default=UserRole.USER) 
