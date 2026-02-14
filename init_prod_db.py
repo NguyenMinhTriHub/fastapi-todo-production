@@ -4,31 +4,36 @@ from app.core.security import get_password_hash
 from sqlalchemy.orm import sessionmaker
 
 def init_db():
-    # Lệnh này sẽ tạo bảng mới nếu bảng chưa tồn tại
-    print("Đang đồng bộ cấu trúc bảng...")
+    print("Đang đồng bộ cấu trúc bảng trên Supabase...")
+    # Tạo bảng nếu chưa có
     Base.metadata.create_all(bind=engine)
     
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db = SessionLocal()
     
     user_email = "mtri20051002@gmail.com"
-    user = db.query(User).filter(User.email == user_email).first()
+    # Bạn có thể đổi mật khẩu Admin tại đây
+    admin_password = "AppDev2026a" 
     
+    user = db.query(User).filter(User.email == user_email).first()
     if not user:
         print(f"Đang tạo tài khoản admin: {user_email}")
         admin_user = User(
             email=user_email,
-            # Băm mật khẩu để verify_password hoạt động
-            hashed_password=get_password_hash("AppDev2026a"), 
+            hashed_password=get_password_hash(admin_password),
             is_active=True,
             role="admin"
         )
         db.add(admin_user)
         db.commit()
-        print("Khởi tạo thành công!")
     else:
-        print("Tài khoản đã tồn tại.")
+        # Cập nhật mật khẩu mới nếu tài khoản đã tồn tại
+        user.hashed_password = get_password_hash(admin_password)
+        db.commit()
+        print("Đã cập nhật mật khẩu cho tài khoản tồn tại.")
+    
     db.close()
+    print("Khởi tạo database thành công!")
 
 if __name__ == "__main__":
     init_db()
