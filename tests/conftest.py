@@ -13,11 +13,16 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 
 @pytest.fixture(scope="module")
 def client():
-    # Khởi tạo bảng và tạo user mẫu để test
+    # Tạo bảng và tạo user mẫu để test
     Base.metadata.create_all(bind=engine)
     db = TestingSessionLocal()
     if not db.query(User).filter(User.email == "mtri20051002@gmail.com").first():
-        test_user = User(email="mtri20051002@gmail.com", hashed_password=get_password_hash("testpass"), is_active=True)
+        # Phải khớp hashed_password với model.py
+        test_user = User(
+            email="mtri20051002@gmail.com", 
+            hashed_password=get_password_hash("testpass"), 
+            is_active=True
+        )
         db.add(test_user)
         db.commit()
     db.close()
@@ -36,6 +41,5 @@ def client():
 
 @pytest.fixture
 def normal_user_token_headers():
-    """Tạo Token thật dựa trên user mẫu đã có trong db test"""
     access_token = create_access_token(data={"sub": "mtri20051002@gmail.com"})
     return {"Authorization": f"Bearer {access_token}"}

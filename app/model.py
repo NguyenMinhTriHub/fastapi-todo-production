@@ -1,26 +1,24 @@
-import enum
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey, Enum
+from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
-from app.core.database import Base #
+from sqlalchemy.ext.declarative import declarative_base
 
-class UserRole(str, enum.Enum):
-    ADMIN = "admin"
-    USER = "user"
+Base = declarative_base()
 
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    password = Column(String, nullable=False)
+    # Đảm bảo tên cột là hashed_password để khớp với conftest.py
+    hashed_password = Column(String, nullable=False) 
     is_active = Column(Boolean, default=True)
-    role = Column(Enum(UserRole), default=UserRole.USER, nullable=False) #
+    role = Column(String, default="user")
     todos = relationship("Todo", back_populates="owner")
 
 class Todo(Base):
     __tablename__ = "todos"
     id = Column(Integer, primary_key=True, index=True)
-    title = Column(String, index=True, nullable=False)
-    description = Column(String, nullable=True)
+    title = Column(String, index=True)
+    description = Column(String, index=True)
     completed = Column(Boolean, default=False)
     owner_id = Column(Integer, ForeignKey("users.id"))
-    owner = relationship("User", back_populates="todos") 
+    owner = relationship("User", back_populates="todos")
