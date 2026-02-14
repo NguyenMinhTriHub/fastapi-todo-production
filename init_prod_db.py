@@ -4,14 +4,13 @@ from app.core.security import get_password_hash
 from sqlalchemy.orm import sessionmaker
 
 def init_db():
-    # Tạo cấu trúc bảng trên Supabase
-    print("Đang tạo bảng trên Supabase...")
+    # Lệnh này sẽ tạo bảng mới nếu bảng chưa tồn tại
+    print("Đang đồng bộ cấu trúc bảng...")
     Base.metadata.create_all(bind=engine)
     
     SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     db = SessionLocal()
     
-    # Kiểm tra và tạo User Admin nếu chưa có
     user_email = "mtri20051002@gmail.com"
     user = db.query(User).filter(User.email == user_email).first()
     
@@ -19,7 +18,8 @@ def init_db():
         print(f"Đang tạo tài khoản admin: {user_email}")
         admin_user = User(
             email=user_email,
-            hashed_password=get_password_hash("AppDev2026a"), # Thay bằng mật khẩu của bạn
+            # Băm mật khẩu để verify_password hoạt động
+            hashed_password=get_password_hash("AppDev2026a"), 
             is_active=True,
             role="admin"
         )
